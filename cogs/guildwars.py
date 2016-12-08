@@ -2,6 +2,7 @@ from discord.ext import commands
 import discord
 from guildwars2api.v2 import GuildWars2API as GW2
 from guildwars2api.v1 import GuildWars2API as GW1
+import BotBase as Db
 
 api = GW1()
 
@@ -26,8 +27,12 @@ class GuildWars:
         member = ctx.message.author
         user = GW2(api_key=tkn)
         wid = user.account.get()["world"]
-        wname = world_name(wid)
+        wname = Db.get_world(wid)
         await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
+
+
+    # @commands.command(pass_context=True)
+    # async def addkey(self, ctx, tkn):
 
 
 def setup(bot):
