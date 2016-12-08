@@ -1,7 +1,7 @@
 # Series of functions to handle postgres database
 
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.orm import sessionmaker
 import sqlalchemy
 import json
@@ -24,6 +24,14 @@ class World(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String)
 
+
+class Users(Base):
+    __tablename__ = 'users'
+
+    id = Column(BigInteger, primary_key=True)
+    api_key = Column(String)
+
+
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -34,7 +42,15 @@ def get_world(wid):
     return query[0]
 
 
-
+def add_key(uid, key):
+    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    if existing is None:
+        user = Users(id=uid, api_key=key)
+        session.add(user)
+    else:
+        existing.api_key = key
+    session.commit()
+    return "You're API key was added!"
 
 
 if __name__ == "__main__":
