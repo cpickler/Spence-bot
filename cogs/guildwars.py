@@ -27,7 +27,7 @@ class GuildWars:
         user = GW2(api_key=tkn)
         wid = user.account.get()["world"]
         wname = world_name(wid)
-        await self.bot.say('{member.mention} is on world: {world}.'.format(member=member, world=wname))
+        await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
 
 
 def setup(bot):

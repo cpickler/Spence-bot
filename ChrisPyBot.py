@@ -2,11 +2,10 @@ from discord.ext import commands
 import discord
 
 import json
-import sys
-import asyncio
-import gw2api.v2
+import sqlalchemy
 
 description="""ChrisPy-Bot"""
+
 
 
 extensions = [
@@ -31,6 +30,9 @@ def load_credentials():
 if __name__ == '__main__':
     credentials = load_credentials()
     token = credentials['token']
+    sql_url = credentials['sql_url']
+
+    # engine = sqlalchemy.create_engine(sql_url)
 
     for extension in extensions:
         bot.load_extension(extension)
