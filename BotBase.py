@@ -53,6 +53,23 @@ def add_key(uid, key):
     return "You're API key was added!"
 
 
+def get_key(uid):
+    try:
+        key = session.query(Users.api_key).filter(Users.id == uid).one_or_none()[0]
+    except TypeError:
+        key = None
+    return key
+
+
+def delete(uid):
+    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    if existing is not None:
+        session.delete(existing)
+        return True
+    else:
+        return False
+
+
 if __name__ == "__main__":
     def worldset():
         for world in Api.world_names.get():

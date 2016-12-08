@@ -19,17 +19,20 @@ class GuildWars:
         self.bot = bot
 
     @commands.command(pass_context=True)
-    async def world(self, ctx, tkn):
+    async def world(self, ctx):
         """
-        Returns the world of the provided API key.
-        :param tkn: Your API key in quotes.
+        Returns the world of the saved API key.
         """
         # TODO Change to use the API key saved
         member = ctx.message.author
-        user = GW2(api_key=tkn)
-        wid = user.account.get()["world"]
-        wname = Db.get_world(wid)
-        await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
+        tkn = Db.get_key(member.id)
+        if tkn is None:
+            await self.bot.say("Error! No api token saved for user {}.".format(member.mention))
+        else:
+            user = GW2(api_key=tkn)
+            wid = user.account.get()["world"]
+            wname = Db.get_world(wid)
+            await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
 
     @commands.command(pass_context=True)
     async def addkey(self, ctx, tkn):
@@ -42,6 +45,16 @@ class GuildWars:
         uid = ctx.message.author.id
         msg = Db.add_key(int(uid), tkn)
         await self.bot.say(msg)
+
+    @commands.command(pass_context=True)
+    async def delkey(self, ctx):
+        member = ctx.message.author
+        uid = member.id
+        result = Db.delete(uid)
+        if result:
+            await self.bot.say("Successfully removed API key for {}".format(member.mention))
+        else:
+            await self.bot.say("The api key for {} could not be deleted since it doesn't exist.")
 
 
 def setup(bot):
