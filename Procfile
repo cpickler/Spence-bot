@@ -1,1 +1,1 @@
-worker: python3 SpenceBot.py
+web: python SpenceBot.py
