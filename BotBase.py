@@ -32,6 +32,21 @@ class Users(Base):
     api_key = Column(String)
 
 
+class Roles(Base):
+    __tablename__ = 'roles'
+
+    id = Column(BigInteger, primary_key=True)
+    server = Column(BigInteger)
+    name = Column(String)
+
+
+class Servers(Base):
+    __tablename__ = 'servers'
+
+    id = Column(BigInteger, primary_key=True)
+    name = Column(String)
+
+
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -69,6 +84,26 @@ def delete(uid):
     else:
         return False
 
+
+def add_server(sid, sname):
+    """
+    Adds a server to the database
+    :param sid: Discord Server ID
+    :param sname: Discord Server Name
+    :return: True = Successfully added, False = Successfully updated, None = No change made
+    """
+    existing = session.query(Servers).filter(Servers.id == sid).one_or_none()
+    if existing is None:
+        server = Servers(id=sid, name=sname)
+        session.add(server)
+        result = True
+    elif existing.name != sname:
+        existing.name = sname
+        result = False
+    else:
+        result = None
+    session.commit()
+    return result
 
 if __name__ == "__main__":
     def worldset():

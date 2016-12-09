@@ -23,7 +23,6 @@ class GuildWars:
         """
         Returns the world of the saved API key.
         """
-        # TODO Change to use the API key saved
         member = ctx.message.author
         tkn = Db.get_key(member.id)
         if tkn is None:

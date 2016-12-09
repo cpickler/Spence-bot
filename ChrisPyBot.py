@@ -24,6 +24,15 @@ async def on_ready():
     print('------')
 
 
+@bot.command(pass_context=True)
+async def addserver(ctx):
+    server = ctx.message.server
+    roles = ctx.message.server.roles
+    print("{} : {}".format(server.name, server.id))
+    for role in roles:
+        print("{} : {}".format(role.name, role.id))
+    await bot.say("Done.")
+
 def load_credentials():
     with open('credentials.json') as f:
         return json.load(f)
