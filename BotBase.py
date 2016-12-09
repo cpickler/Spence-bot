@@ -6,17 +6,12 @@ from sqlalchemy.orm import sessionmaker
 import sqlalchemy
 import json
 from guildwars2api.v1 import GuildWars2API as GW1
+import os
 
 Api = GW1()
 Base = declarative_base()
+sql_url = os.environ['DATABASE_URL']
 
-
-def load_credentials():
-    with open('credentials.json') as f:
-        return json.load(f)
-
-credentials = load_credentials()
-sql_url = credentials['sql_url']
 
 class World(Base):
     __tablename__ = 'world_names'

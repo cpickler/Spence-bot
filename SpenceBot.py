@@ -4,6 +4,7 @@ import discord
 
 import json
 import BotBase as Db
+import os
 
 description="""ChrisPy-Bot"""
 
@@ -36,14 +37,10 @@ async def addserver(ctx):
         msg = 'No changes made, server may already exist.'
     await bot.say(msg)
 
-def load_credentials():
-    with open('credentials.json') as f:
-        return json.load(f)
 
 if __name__ == '__main__':
-    credentials = load_credentials()
-    token = credentials['token']
-    sql_url = credentials['sql_url']
+    token = os.environ['DISCORD_TOKEN']
+    sql_url = os.environ['DATABASE_URL']
 
     # engine = sqlalchemy.create_engine(sql_url)
 
