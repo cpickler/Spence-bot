@@ -34,7 +34,7 @@ class GuildWars:
             await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
 
     @commands.command(pass_context=True)
-    async def addkey(self, ctx, tkn):
+    async def addKey(self, ctx, tkn):
         """
         Save your API token to the server.
         :param ctx: Message context to provide your Discord ID.
@@ -46,7 +46,7 @@ class GuildWars:
         await self.bot.say(msg)
 
     @commands.command(pass_context=True)
-    async def delkey(self, ctx):
+    async def delKey(self, ctx):
         member = ctx.message.author
         uid = member.id
         result = Db.delete(uid)
@@ -54,6 +54,11 @@ class GuildWars:
             await self.bot.say("Successfully removed API key for {}".format(member.mention))
         else:
             await self.bot.say("The api key for {} could not be deleted since it doesn't exist.")
+
+    @commands.command(pass_context=True):
+    async def addWorldRole(self, ctx, role):
+        pass
+
 
 
 def setup(bot):
