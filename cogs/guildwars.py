@@ -1,6 +1,8 @@
 from discord.ext import commands
 import discord
+# noinspection PyPep8Naming
 from guildwars2api.v2 import GuildWars2API as GW2
+# noinspection PyPep8Naming
 from guildwars2api.v1 import GuildWars2API as GW1
 import BotBase as Db
 
@@ -13,6 +15,7 @@ def world_name(wid):
             return i['name']
     return "Error"
 
+
 def get_role(server, rname):
     roles = server.roles
     for role in roles:
@@ -20,6 +23,7 @@ def get_role(server, rname):
             return role
 
 
+# noinspection PyPep8Naming,PyPep8Naming,PyPep8Naming
 class GuildWars:
     def __init__(self, bot):
         self.bot = bot
@@ -68,8 +72,6 @@ class GuildWars:
         role = get_role(ctx.message.server, rname)
         Db.add_world_role(sid, role.id, wid)
         await self.bot.say("Role **{}** successfully linked to world.".format(rname))
-
-
 
 
 def setup(bot):

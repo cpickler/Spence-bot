@@ -1,12 +1,12 @@
 # Series of functions to handle postgres database
 
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, BigInteger
-from sqlalchemy.orm import sessionmaker
-import sqlalchemy
-import json
-from guildwars2api.v1 import GuildWars2API as GW1
 import os
+
+import sqlalchemy
+from guildwars2api.v1 import GuildWars2API as GW1
+from sqlalchemy import Column, Integer, String, BigInteger
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
 
 Api = GW1()
 Base = declarative_base()
@@ -133,11 +133,10 @@ def add_server(sid, sname):
 
 def worldset():
     for world in Api.world_names.get():
-        try:
-            w = World(id=int(world['id']), name=world['name'])
-            session.add(w)
-        except:
-            print('Couldnt add' + w)
+        w = World(id=int(world['id']), name=world['name'])
+        session.add(w)
+    session.commit()
+
 
 
 if __name__ == "__main__":

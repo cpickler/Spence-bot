@@ -1,14 +1,10 @@
-from discord.ext import commands
-
-import discord
-
-import json
-import BotBase as Db
 import os
 
-description="""ChrisPy-Bot"""
+from discord.ext import commands
 
+import BotBase as Db
 
+description = """ChrisPy-Bot"""
 
 extensions = [
     'cogs.guildwars'
@@ -33,7 +29,7 @@ async def addserver(ctx):
         msg = 'Server successfully added.'
     elif result is False:
         msg = 'Server succesfully updated.'
-    elif result is None:
+    else:
         msg = 'No changes made, server may already exist.'
     await bot.say(msg)
 
