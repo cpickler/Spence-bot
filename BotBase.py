@@ -139,7 +139,6 @@ def worldset():
         except:
             print('Couldnt add' + w)
 
-#
 
 if __name__ == "__main__":
     worldset()
