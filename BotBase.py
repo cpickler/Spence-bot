@@ -73,13 +73,25 @@ def get_key(uid):
     return key
 
 
-def delete(uid):
+def delete_user(uid):
     existing = session.query(Users).filter(Users.id == uid).one_or_none()
     if existing is not None:
         session.delete(existing)
         return True
     else:
         return False
+
+
+def add_world_role(sid, rid, wid):
+    existing = session.query(Roles).filter(Roles.id == rid).one_or_none()
+    if existing is not None:
+        existing.id = rid
+        existing.server = sid
+        existing.world_id = wid
+    elif existing is None:
+        role = Roles(world_id=wid, id=rid, server=sid)
+        session.add(role)
+        session.commit()
 
 
 def add_server(sid, sname):

@@ -49,13 +49,13 @@ class GuildWars:
     async def delKey(self, ctx):
         member = ctx.message.author
         uid = member.id
-        result = Db.delete(uid)
+        result = Db.delete_user(uid)
         if result:
             await self.bot.say("Successfully removed API key for {}".format(member.mention))
         else:
             await self.bot.say("The api key for {} could not be deleted since it doesn't exist.")
 
-    @commands.command(pass_context=True):
+    @commands.command(pass_context=True)
     async def addWorldRole(self, ctx, role):
         pass
 
