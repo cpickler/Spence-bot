@@ -50,9 +50,15 @@ class GuildWars:
         :param tkn: Your API token in "quotes."
         :return: "Success!" or "Failed :("
         """
-        uid = ctx.message.author.id
-        msg = Db.add_key(int(uid), tkn)
-        await self.bot.say(msg)
+        # Check to see if the message is a PM, delete if not
+        if ctx.message.server is not None:
+            await self.bot.delete_message(ctx.message)
+            await self.bot.send_message(ctx.message.author, 'API Keys can only be added in PMs.  '
+                                                        'Reply with "!addKey <your api key>" to add your key.')
+        else:
+            uid = ctx.message.author.id
+            msg = Db.add_key(int(uid), tkn)
+            await self.bot.say(msg)
 
     @commands.command(pass_context=True)
     async def delKey(self, ctx):
