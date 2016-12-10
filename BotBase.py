@@ -131,6 +131,20 @@ def add_server(sid, sname):
     return result
 
 
+def get_world_role(sid, wid):
+    """
+    Get the Role ID for a world on a server
+    :param sid: Server ID
+    :param wid: World ID
+    :return: Role ID or None if it doesn't exist
+    """
+    existing = session.query(Roles.id).filter(Roles.server == sid and Roles.world_id == wid).one_or_none()
+    if existing is not None:
+        return existing[0]
+    else:
+        return existing
+
+
 def worldset():
     for world in Api.world_names.get():
         w = World(id=int(world['id']), name=world['name'])

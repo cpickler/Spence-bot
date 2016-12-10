@@ -34,6 +34,8 @@ class GuildWars:
             user = GW2(api_key=tkn)
             wid = user.account.get()["world"]
             wname = Db.get_world(wid)
+            # Check to see if the world has a role on the server
+
             await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
 
     @commands.command(pass_context=True)
