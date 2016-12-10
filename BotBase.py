@@ -33,6 +33,7 @@ class Roles(Base):
     id = Column(BigInteger, primary_key=True)
     server = Column(BigInteger)
     name = Column(String)
+    world_id = Column(Integer)
 
 
 class Servers(Base):
@@ -45,6 +46,7 @@ class Servers(Base):
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
 session = Session()
+Base.metadata.create_all(engine)
 
 
 def get_world(wid):
@@ -100,14 +102,18 @@ def add_server(sid, sname):
     session.commit()
     return result
 
-if __name__ == "__main__":
-    def worldset():
-        for world in Api.world_names.get():
-            try:
-                w = World(id=int(world['id']), name=world['name'])
-                session.add(w)
-            except:
-                print('Couldnt add' + w)
 
+def worldset():
+    for world in Api.world_names.get():
+        try:
+            w = World(id=int(world['id']), name=world['name'])
+            session.add(w)
+        except:
+            print('Couldnt add' + w)
+
+#
+
+if __name__ == "__main__":
+    worldset()
     session.commit()
     session.close()
