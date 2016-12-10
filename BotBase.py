@@ -152,7 +152,6 @@ def worldset():
     session.commit()
 
 
-
 if __name__ == "__main__":
     worldset()
     session.commit()

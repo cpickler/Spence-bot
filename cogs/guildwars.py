@@ -27,6 +27,7 @@ class GuildWars:
         Returns the world of the saved API key.
         """
         member = ctx.message.author
+        server = ctx.message.server
         tkn = Db.get_key(member.id)
         if tkn is None:
             await self.bot.say("Error! No api token saved for user {}.".format(member.mention))
@@ -35,7 +36,10 @@ class GuildWars:
             wid = user.account.get()["world"]
             wname = Db.get_world(wid)
             # Check to see if the world has a role on the server
-
+            rid = Db.get_world_role(server.id, wid)
+            if rid is not None:
+                role = discord.utils.get(server.roles, id=str(rid))
+                await self.bot.add_roles(member, role)
             await self.bot.say('{member.mention} is on world: **{world}**.'.format(member=member, world=wname))
 
     @commands.command(pass_context=True)
