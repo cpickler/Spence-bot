@@ -13,6 +13,12 @@ def world_name(wid):
             return i['name']
     return "Error"
 
+def get_role(server, rname):
+    roles = server.roles
+    for role in roles:
+        if role.name == rname:
+            return role
+
 
 class GuildWars:
     def __init__(self, bot):
@@ -56,8 +62,13 @@ class GuildWars:
             await self.bot.say("The api key for {} could not be deleted since it doesn't exist.")
 
     @commands.command(pass_context=True)
-    async def addWorldRole(self, ctx, role):
-        pass
+    async def addWorldRole(self, ctx, rname):
+        sid = ctx.message.server.id
+        wid = Db.get_world_id(rname)
+        role = get_role(ctx.message.server, rname)
+        Db.add_world_role(sid, role.id, wid)
+        await self.bot.say("Role **{}** successfully linked to world.".format(rname))
+
 
 
 

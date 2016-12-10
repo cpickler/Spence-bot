@@ -32,7 +32,6 @@ class Roles(Base):
 
     id = Column(BigInteger, primary_key=True)
     server = Column(BigInteger)
-    name = Column(String)
     world_id = Column(Integer)
 
 
@@ -52,6 +51,15 @@ Base.metadata.create_all(engine)
 def get_world(wid):
     query = session.query(World.name).filter(World.id == wid).one()
     return query[0]
+
+
+def get_world_id(name):
+    query = session.query(World.id).filter(World.name == name).one_or_none()
+    try:
+        result = query[0]
+    except TypeError:
+        result = None
+    return result
 
 
 def add_key(uid, key):
@@ -83,6 +91,13 @@ def delete_user(uid):
 
 
 def add_world_role(sid, rid, wid):
+    """
+    Populates the Roles Table with a new row.
+    :param sid: Discord Server ID
+    :param rid: Discord Role ID
+    :param wid: GW2 World ID
+    :return: True:Success False:Error
+    """
     existing = session.query(Roles).filter(Roles.id == rid).one_or_none()
     if existing is not None:
         existing.id = rid
@@ -91,7 +106,8 @@ def add_world_role(sid, rid, wid):
     elif existing is None:
         role = Roles(world_id=wid, id=rid, server=sid)
         session.add(role)
-        session.commit()
+    session.commit()
+    return True
 
 
 def add_server(sid, sname):
