@@ -5,6 +5,8 @@ from guildwars2api.v2 import GuildWars2API as GW2
 # noinspection PyPep8Naming
 from guildwars2api.v1 import GuildWars2API as GW1
 import BotBase as Db
+import base64
+import codecs
 
 api = GW1()
 
@@ -15,6 +17,11 @@ def world_name(wid):
             return i['name']
     return "Error"
 
+
+def chat_to_id(chat):
+    b64 = base64.b64decode(chat)[2:][::-1]
+    hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
+    return int(hex_string, 0)
 
 # noinspection PyPep8Naming,PyPep8Naming,PyPep8Naming
 class GuildWars:
@@ -73,6 +80,7 @@ class GuildWars:
     @commands.command(pass_context=True, no_pm=True)
     @commands.has_permissions(administrator=True)
     async def addWorldRole(self, ctx, rname):
+
         sid = ctx.message.server.id
         wid = Db.get_world_id(rname)
         role = discord.utils.get(ctx.message.server.roles, name=rname)
