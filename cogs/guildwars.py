@@ -70,13 +70,17 @@ class GuildWars:
         else:
             await self.bot.say("The api key for {} could not be deleted since it doesn't exist.")
 
-    @commands.command(pass_context=True)
+    @commands.command(pass_context=True, no_pm=True)
+    @commands.has_permissions(administrator=True)
     async def addWorldRole(self, ctx, rname):
         sid = ctx.message.server.id
         wid = Db.get_world_id(rname)
         role = discord.utils.get(ctx.message.server.roles, name=rname)
-        Db.add_world_role(sid, role.id, wid)
-        await self.bot.say("Role **{}** successfully linked to world.".format(rname))
+        if role is None:
+            await self.bot.say('No role named "{}", verify the role exists, or check your spelling.'.format(rname))
+        else:
+            Db.add_world_role(sid, role.id, wid)
+            await self.bot.say("Role **{}** successfully linked to world.".format(rname))
 
 
 def setup(bot):
