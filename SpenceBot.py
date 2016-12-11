@@ -34,6 +34,10 @@ async def addserver(ctx):
     await bot.say(msg)
 
 
+# @bot.event
+# async def on_message(message):
+#     print(message.content)
+
 if __name__ == '__main__':
     token = os.environ['DISCORD_TOKEN']
     sql_url = os.environ['DATABASE_URL']

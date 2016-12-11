@@ -4,15 +4,17 @@ import discord
 from guildwars2api.v2 import GuildWars2API as GW2
 # noinspection PyPep8Naming
 from guildwars2api.v1 import GuildWars2API as GW1
+import guildwars2api
 import BotBase as Db
 import base64
 import codecs
 
-api = GW1()
+api1 = GW1()
+api2 = GW2()
 
 
 def world_name(wid):
-    for i in api.world_names.get():
+    for i in api1.world_names.get():
         if i['id'] == str(wid):
             return i['name']
     return "Error"
@@ -22,6 +24,10 @@ def chat_to_id(chat):
     b64 = base64.b64decode(chat)[2:][::-1]
     hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
     return int(hex_string, 0)
+
+
+# def is_valid_key(key):
+
 
 # noinspection PyPep8Naming,PyPep8Naming,PyPep8Naming
 class GuildWars:
@@ -40,6 +46,7 @@ class GuildWars:
             await self.bot.say("Error! No api token saved for user {}.".format(member.mention))
         else:
             user = GW2(api_key=tkn)
+            print(user.token_info)
             wid = user.account.get()["world"]
             wname = Db.get_world(wid)
             # Check to see if the world has a role on the server
@@ -63,8 +70,13 @@ class GuildWars:
             await self.bot.send_message(ctx.message.author, 'API Keys can only be added in PMs.  '
                                                         'Reply with "!addKey <your api key>" to add your key.')
         else:
-            uid = ctx.message.author.id
-            msg = Db.add_key(int(uid), tkn)
+            try:
+                user = GW2(api_key=tkn)
+                user.token_info.get()
+                uid = ctx.message.author.id
+                msg = Db.add_key(int(uid), tkn)
+            except guildwars2api.base.GuildWars2APIError:
+                msg = "Invalid API key, please try again."
             await self.bot.say(msg)
 
     @commands.command(pass_context=True)
