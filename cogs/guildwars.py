@@ -129,6 +129,9 @@ class GuildWars:
 
     @commands.command(pass_context=True)
     async def guilds(self, ctx):
+        """
+        Returns a list of guild memberships for the user.
+        """
         author = ctx.message.author
         user = GW2(api_key=Db.get_key(author.id))
         guilds = user.account.get()['guilds']
