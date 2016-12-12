@@ -168,10 +168,10 @@ def get_world_role(sid, wid):
         return existing
 
 
-def add_guild_role(gid, gname, gtag, rid, sid):
-    existing = session.query(GuildRoles).filter(GuildRoles.id == gid, GuildRoles.server == sid).one_or_none()
+def add_guild_role(gid, rid, sid):
+    existing = session.query(GuildRoles).filter(GuildRoles.id == rid, GuildRoles.server == sid).one_or_none()
     if existing is None:
-        guild = GuildRoles(id=gid, name=gname, tag=gtag, role=rid, server=sid)
+        guild = GuildRoles(id=rid, guild_id=gid, server=sid)
         session.add(guild)
         result = True
     else:
@@ -184,7 +184,6 @@ def add_guild_role(gid, gname, gtag, rid, sid):
 def get_add_guild(gid):
     guild = session.query(Guilds).filter(Guilds.id == gid).one_or_none()
     if guild is None:
-        # TODO Add guild and return info
         details = Api1.guild_details.get(guild_id=gid)
         guild = Guilds(id=gid, tag=details['guild_name'], name=details['tag'])
         session.add(guild)
@@ -198,6 +197,14 @@ def worldset():
         session.add(w)
     session.commit()
 
+
+def get_guild_role(server, gid):
+    existing = session.query(GuildRoles.id).filter(GuildRoles.guild_id == gid,
+                                                   GuildRoles.server == int(server)).one_or_none()
+    if existing is None:
+        return None
+    else:
+        return existing[0]
 
 if __name__ == "__main__":
     worldset()

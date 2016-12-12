@@ -113,18 +113,21 @@ class GuildWars:
         author = ctx.message.author
         user = GW2(api_key=Db.get_key(author.id))
         guilds = user.account.get()['guilds']
+
         if rname is None and gnum is None:
             prompt = 'Which guild to add? \n```'
             for i in range(len(guilds)):
                 g = api1.guild_details.get(guild_id=guilds[i])
                 prompt += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='['+g['tag']+']', name=g['guild_name'])
+
             prompt += '\n\n Reply with eg. !addGuildRole "Awesome Guild" 1```'
             await self.bot.say(prompt)
+
         elif rname is not None and gnum is not None:
             role = discord.utils.get(ctx.message.server.roles, name=rname)
             gid = guilds[int(gnum)]
             guild = api1.guild_details.get(guild_id=gid)
-            Db.add_guild_role(gid, guild['guild_name'], guild['tag'], role.id, ctx.message.server.id)
+            Db.add_guild_role(gid, int(role.id), int(ctx.message.server.id))
             await self.bot.say("Role successfully added.")
 
     @commands.command(pass_context=True)
@@ -137,8 +140,13 @@ class GuildWars:
         guilds = user.account.get()['guilds']
         result = '{} is in guilds:\n```'.format(author.mention)
         for i in range(len(guilds)):
-            g = api1.guild_details.get(guild_id=guilds[i])
+            g = Db.get_add_guild(guilds[i])
             result += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='['+g['tag']+']', name=g['guild_name'])
+            # Add guild role to the user
+            rid = Db.get_guild_role(ctx.message.server.id, guilds[i])
+            if rid is not None:
+                role = discord.utils.get(ctx.message.server.roles, id=str(rid))
+                await self.bot.add_roles(author, role)
         result += '\n```'
         await self.bot.say(result)
 
