@@ -1,13 +1,13 @@
-from discord.ext import commands
-import discord
-# noinspection PyPep8Naming
-from guildwars2api.v2 import GuildWars2API as GW2
-# noinspection PyPep8Naming
-from guildwars2api.v1 import GuildWars2API as GW1
-import guildwars2api
-import BotBase as Db
 import base64
 import codecs
+
+import discord
+import guildwars2api
+from discord.ext import commands
+from guildwars2api.v1 import GuildWars2API as GW1
+from guildwars2api.v2 import GuildWars2API as GW2
+
+import BotBase as Db
 
 api1 = GW1()
 api2 = GW2()
@@ -68,7 +68,7 @@ class GuildWars:
         if ctx.message.server is not None:
             await self.bot.delete_message(ctx.message)
             await self.bot.send_message(ctx.message.author, 'API Keys can only be added in PMs.  '
-                                                        'Reply with "!addKey <your api key>" to add your key.')
+                                                            'Reply with "!addKey <your api key>" to add your key.')
         else:
             try:
                 user = GW2(api_key=tkn)

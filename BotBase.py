@@ -41,6 +41,14 @@ class Servers(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String)
 
+class Guilds(Base):
+    __tablename__ = 'guilds'
+
+    id = Column(String, primary_key=True)
+    name = Column(String)
+    tag = Column(String)
+    role = Column(BigInteger)
+
 
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
@@ -63,7 +71,7 @@ def get_world_id(name):
 
 
 def add_key(uid, key):
-    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    existing = existing_user(uid)
     if existing is None:
         user = Users(id=uid, api_key=key)
         session.add(user)
@@ -71,6 +79,11 @@ def add_key(uid, key):
         existing.api_key = key
     session.commit()
     return "You're API key was added!"
+
+
+def existing_user(uid):
+    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    return existing
 
 
 def get_key(uid):
@@ -82,7 +95,7 @@ def get_key(uid):
 
 
 def delete_user(uid):
-    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    existing = existing_user(uid)
     if existing is not None:
         session.delete(existing)
         return True
