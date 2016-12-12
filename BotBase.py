@@ -48,6 +48,7 @@ class Guilds(Base):
     name = Column(String)
     tag = Column(String)
     role = Column(BigInteger)
+    server = Column(BigInteger)
 
 
 engine = sqlalchemy.create_engine(sql_url)
@@ -156,6 +157,19 @@ def get_world_role(sid, wid):
         return existing[0]
     else:
         return existing
+
+
+def add_guild_role(gid, gname, gtag, rid, sid):
+    existing = session.query(Guilds).filter(Guilds.id == gid, Guilds.server == sid).one_or_none()
+    if existing is None:
+        guild = Guilds(id=gid, name=gname, tag=gtag, role=rid, server=sid)
+        session.add(guild)
+        result = True
+    else:
+        existing.role = rid
+        result = True
+    session.commit()
+    return result
 
 
 def worldset():
