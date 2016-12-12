@@ -4,11 +4,14 @@ import os
 
 import sqlalchemy
 from guildwars2api.v1 import GuildWars2API as GW1
+from guildwars2api.v2 import GuildWars2API as GW2
 from sqlalchemy import Column, Integer, String, BigInteger
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-Api = GW1()
+Api1 = GW1()
+Api2 = GW2()
+
 Base = declarative_base()
 sql_url = os.environ['DATABASE_URL']
 
@@ -27,8 +30,8 @@ class Users(Base):
     api_key = Column(String)
 
 
-class Roles(Base):
-    __tablename__ = 'roles'
+class WorldRoles(Base):
+    __tablename__ = 'world-roles'
 
     id = Column(BigInteger, primary_key=True)
     server = Column(BigInteger)
@@ -41,15 +44,21 @@ class Servers(Base):
     id = Column(BigInteger, primary_key=True)
     name = Column(String)
 
+
+class GuildRoles(Base):
+    __tablename__ = 'guild-roles'
+
+    id = Column(BigInteger, primary_key=True)
+    guild_id = Column(String)
+    server = Column(BigInteger)
+
+
 class Guilds(Base):
     __tablename__ = 'guilds'
 
     id = Column(String, primary_key=True)
     name = Column(String)
     tag = Column(String)
-    role = Column(BigInteger)
-    server = Column(BigInteger)
-
 
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
@@ -112,13 +121,13 @@ def add_world_role(sid, rid, wid):
     :param wid: GW2 World ID
     :return: True:Success False:Error
     """
-    existing = session.query(Roles).filter(Roles.id == rid).one_or_none()
+    existing = session.query(WorldRoles).filter(WorldRoles.id == rid).one_or_none()
     if existing is not None:
         existing.id = rid
         existing.server = sid
         existing.world_id = wid
     elif existing is None:
-        role = Roles(world_id=wid, id=rid, server=sid)
+        role = WorldRoles(world_id=wid, id=rid, server=sid)
         session.add(role)
     session.commit()
     return True
@@ -152,7 +161,7 @@ def get_world_role(sid, wid):
     :param wid: World ID
     :return: Role ID or None if it doesn't exist
     """
-    existing = session.query(Roles.id).filter(Roles.server == sid and Roles.world_id == wid).one_or_none()
+    existing = session.query(WorldRoles.id).filter(WorldRoles.server == sid and WorldRoles.world_id == wid).one_or_none()
     if existing is not None:
         return existing[0]
     else:
@@ -160,9 +169,9 @@ def get_world_role(sid, wid):
 
 
 def add_guild_role(gid, gname, gtag, rid, sid):
-    existing = session.query(Guilds).filter(Guilds.id == gid, Guilds.server == sid).one_or_none()
+    existing = session.query(GuildRoles).filter(GuildRoles.id == gid, GuildRoles.server == sid).one_or_none()
     if existing is None:
-        guild = Guilds(id=gid, name=gname, tag=gtag, role=rid, server=sid)
+        guild = GuildRoles(id=gid, name=gname, tag=gtag, role=rid, server=sid)
         session.add(guild)
         result = True
     else:
@@ -172,8 +181,19 @@ def add_guild_role(gid, gname, gtag, rid, sid):
     return result
 
 
+def get_add_guild(gid):
+    guild = session.query(Guilds).filter(Guilds.id == gid).one_or_none()
+    if guild is None:
+        # TODO Add guild and return info
+        details = Api1.guild_details.get(guild_id=gid)
+        guild = Guilds(id=gid, tag=details['guild_name'], name=details['tag'])
+        session.add(guild)
+        session.commit()
+    return {'id': guild.id, 'guild_name': guild.name, 'tag': guild.name}
+
+
 def worldset():
-    for world in Api.world_names.get():
+    for world in Api1.world_names.get():
         w = World(id=int(world['id']), name=world['name'])
         session.add(w)
     session.commit()
