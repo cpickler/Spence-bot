@@ -25,11 +25,6 @@ def chat_to_id(chat):
     hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
     return int(hex_string, 0)
 
-
-# def is_valid_key(key):
-
-
-# noinspection PyPep8Naming,PyPep8Naming,PyPep8Naming
 class GuildWars:
     def __init__(self, bot):
         self.bot = bot
