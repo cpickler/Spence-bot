@@ -193,8 +193,10 @@ def get_add_guild(gid):
 
 def worldset():
     for world in Api1.world_names.get():
-        w = World(id=int(world['id']), name=world['name'])
-        session.add(w)
+        existing = session.query(World).filter(World.id == world['id']).one_or_none()
+        if existing is None:
+            w = World(id=int(world['id']), name=world['name'])
+            session.add(w)
     session.commit()
 
 
@@ -205,6 +207,8 @@ def get_guild_role(server, gid):
         return None
     else:
         return existing[0]
+
+worldset()
 
 if __name__ == "__main__":
     worldset()
