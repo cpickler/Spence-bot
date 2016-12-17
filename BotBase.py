@@ -60,6 +60,14 @@ class Guilds(Base):
     name = Column(String)
     tag = Column(String)
 
+
+class Agony(Base):
+    __tablename__ = 'agony'
+
+    id = Column(Integer, primary_key=True)
+    agony = Column(Integer)
+
+
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
 session = Session()
@@ -207,6 +215,22 @@ def get_guild_role(server, gid):
         return None
     else:
         return existing[0]
+
+
+def get_agony_resistance(id):
+    existing = session.query(Agony.agony).filter(Agony.id==id).one_or_none()
+    if existing is None:
+        agony = 0
+        item = Api2.items.get(id=id)
+        for inf in item['details']['infix_upgrade']['attributes']:
+            if inf['attribute'] == 'AgonyResistance':
+                agony += inf['modifier']
+        infusion = Agony(id=id, agony=agony)
+        session.add(infusion)
+        session.commit()
+    else:
+        agony = existing[0]
+    return agony
 
 worldset()
 
