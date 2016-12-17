@@ -148,15 +148,27 @@ class GuildWars:
         await self.bot.say(result)
 
     @commands.command(pass_context=True)
-    async def profile(self, ctx):
+    async def profile(self, ctx, char_name):
         """
         Return the account information for a given user.
         """
         author = ctx.message.author
-        pass
+        try:
+            ar = get_agony(Db.get_key(author.id), char_name)
+            embed = discord.Embed(title=char_name)
+            await self.bot.say(embed=embed)
+        except guildwars2api.base.GuildWars2APIError:
+            await self.bot.say('The character {}, could not be found.'.format(char_name))
 
 
 def get_agony(tkn, char_name):
+    """
+    Get the AR for a character, returning the max possible AR between the two weapon sets.
+    Disregards aquatic weapons and breathers.
+    :param tkn: GW2 API Token
+    :param char_name: Full character name
+    :return: int : Total AR
+    """
     user = GW2(api_key=tkn)
     equipment = user.characters.get(id=char_name)['equipment']
     infusions = []
@@ -165,6 +177,7 @@ def get_agony(tkn, char_name):
     agony = 0
     a_agony = 0
     b_agony = 0
+    # Get the agony for each load-out
     for item in equipment:
         if 'Aquatic' not in item['slot']:
             if item['slot'] in ('WeaponA1', 'WeaponA2'):
@@ -185,6 +198,7 @@ def get_agony(tkn, char_name):
         a_agony += Db.get_agony_resistance(infusion)
     for infusion in bslots:
         b_agony += Db.get_agony_resistance(infusion)
+    # Use the highest load-out AR to calculate total AR
     if a_agony >= b_agony:
         agony += a_agony
     else:
