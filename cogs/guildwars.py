@@ -149,7 +149,7 @@ class GuildWars:
         await self.bot.say(result)
 
     @commands.command(pass_context=True)
-    async def profile(self, ctx, char_name):
+    async def profile(self, ctx, char_name=None):
         """
         Return the account information for a given user.
         """
@@ -162,6 +162,15 @@ class GuildWars:
             await self.bot.say(embed=embed)
         except guildwars2api.base.GuildWars2APIError:
             await self.bot.say('The character {}, could not be found.'.format(char_name))
+
+    @commands.command(pass_context=True, aliases = ['defchar'])
+    async def defaultCharacter(self, ctx, cname=None):
+        if cname is None:
+            pass
+        else:
+            result = Db.set_default_character(ctx.message.author.id, cname)
+        if result is True:
+            await self.bot.say('Default character successfully set to: {}'.format(cname))
 
 
 def get_agony(tkn, char_name):
