@@ -9,8 +9,6 @@ from guildwars2api.v2 import GuildWars2API as GW2
 
 import BotBase as Db
 
-import os
-
 api1 = GW1()
 api2 = GW2()
 
@@ -147,53 +145,5 @@ class GuildWars:
         result += '\n```'
         await self.bot.say(result)
 
-    @commands.command(pass_context=True)
-    async def profile(self, ctx):
-        """
-        Return the account information for a given user.
-        """
-        author = ctx.message.author
-        pass
-
-
-def get_agony(tkn, char_name):
-    user = GW2(api_key=tkn)
-    equipment = user.characters.get(id=char_name)['equipment']
-    infusions = []
-    aslots = []
-    bslots = []
-    agony = 0
-    a_agony = 0
-    b_agony = 0
-    for item in equipment:
-        if 'Aquatic' not in item['slot']:
-            if item['slot'] in ('WeaponA1', 'WeaponA2'):
-                i = item.get('infusions', None)
-                if i is not None:
-                    aslots += i
-            elif item['slot'] in ('WeaponB1', 'WeaponB2'):
-                i = item.get('infusions', None)
-                if i is not None:
-                    bslots += i
-            else:
-                i = item.get('infusions', None)
-                if i is not None:
-                    infusions += i
-    for infusion in infusions:
-        agony += Db.get_agony_resistance(infusion)
-    for infusion in aslots:
-        a_agony += Db.get_agony_resistance(infusion)
-    for infusion in bslots:
-        b_agony += Db.get_agony_resistance(infusion)
-    if a_agony >= b_agony:
-        agony += a_agony
-    else:
-        agony += b_agony
-    return agony
-
 def setup(bot):
     bot.add_cog(GuildWars(bot))
-
-
-if __name__ == '__main__':
-    print(get_agony(os.environ['gw2_token'], 'Neth Yaulë'))
