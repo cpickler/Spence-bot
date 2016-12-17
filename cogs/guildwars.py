@@ -1,5 +1,6 @@
 import base64
 import codecs
+from urllib.parse import quote
 
 import discord
 import guildwars2api
@@ -155,7 +156,9 @@ class GuildWars:
         author = ctx.message.author
         try:
             ar = get_agony(Db.get_key(author.id), char_name)
-            embed = discord.Embed(title=char_name)
+            url = "https://gw2efficiency.com/c/" + quote(char_name)
+            embed = discord.Embed(title=char_name, url=url)
+            embed.add_field(value='AR: {}'.format(str(ar)), inline=False, name='Agony Resistance')
             await self.bot.say(embed=embed)
         except guildwars2api.base.GuildWars2APIError:
             await self.bot.say('The character {}, could not be found.'.format(char_name))
