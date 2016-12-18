@@ -165,12 +165,35 @@ class GuildWars:
 
     @commands.command(pass_context=True, aliases = ['defchar'])
     async def defaultCharacter(self, ctx, cname=None):
+        user = GW2(api_key=Db.get_key(ctx.message.author.id))
+        result = False
         if cname is None:
-            pass
+            await self.bot.say('Which character to use?\n' + char_output(Db.get_key(ctx.message.author.id)) +
+                               '\nEg: `!defaultCharacter 1` to set character `(1)`')
         else:
+            char_list = user.characters.get()
+            try:
+                cint = int(cname) - 1
+                # get character name
+                cname = char_list[cint]
+            except IndexError:
+                await self.bot.say('option must be between 1 and {max}.'.format(max=len(char_list)))
+            except ValueError:
+                # check character name is valid
+                if cname not in char_list:
+                    await self.bot.say('Character {name} does not exist. Spelling and capitalization '
+                                       'does matter.'.format(name=cname))
+                    cname = None
+        if cname is not None:
             result = Db.set_default_character(ctx.message.author.id, cname)
         if result is True:
             await self.bot.say('Default character successfully set to: {}'.format(cname))
+
+    @commands.command(pass_context=True, aliases=['chars'])
+    async def characters(self, ctx):
+        author = ctx.message.author
+        tkn = Db.get_key(author.id)
+        await self.bot.say(char_output(tkn))
 
 
 def get_agony(tkn, char_name):
@@ -217,8 +240,24 @@ def get_agony(tkn, char_name):
         agony += b_agony
     return agony
 
+
 def setup(bot):
     bot.add_cog(GuildWars(bot))
+
+
+def char_output(tkn):
+    user = GW2(api_key=tkn)
+    chars = user.characters.get_all()
+    output = '```\n'
+    i = 1
+    for char in chars:
+        line = '({num}) {name} : Level {level} {race} {prof}.\n'.format(num=i, name=char['name'],
+                                                                        level=char['level'], race=char['race'],
+                                                                        prof=char['profession'])
+        output += line
+        i += 1
+    output += '```'
+    return output
 
 
 if __name__ == '__main__':
