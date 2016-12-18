@@ -1,5 +1,6 @@
 import base64
 import codecs
+import os
 from urllib.parse import quote
 
 import discord
@@ -9,8 +10,6 @@ from guildwars2api.v1 import GuildWars2API as GW1
 from guildwars2api.v2 import GuildWars2API as GW2
 
 import BotBase as Db
-
-import os
 
 api1 = GW1()
 api2 = GW2()
@@ -28,6 +27,7 @@ def chat_to_id(chat):
     hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
     return int(hex_string, 0)
 
+
 class GuildWars:
     def __init__(self, bot):
         self.bot = bot
@@ -44,7 +44,6 @@ class GuildWars:
             await self.bot.say("Error! No api token saved for user {}.".format(member.mention))
         else:
             user = GW2(api_key=tkn)
-            print(user.token_info)
             wid = user.account.get()["world"]
             wname = Db.get_world(wid)
             # Check to see if the world has a role on the server
@@ -100,9 +99,9 @@ class GuildWars:
             Db.add_world_role(sid, role.id, wid)
             await self.bot.say("Role **{}** successfully linked to world.".format(rname))
 
-    @commands.command(pass_context=True, no_pm=True,aliases=['addguildrole'])
+    @commands.command(pass_context=True, no_pm=True, aliases=['addguildrole'])
     @commands.has_permissions(administrator=True)
-    async def addGuildRole(self, ctx, rname=None, gnum=None,):
+    async def addGuildRole(self, ctx, rname=None, gnum=None, ):
         """
         Link a guild and a role together. You must have permissions to use this command.
         :param role: @mention or name of the role to add.
@@ -116,7 +115,7 @@ class GuildWars:
             prompt = 'Which guild to add? \n```'
             for i in range(len(guilds)):
                 g = api1.guild_details.get(guild_id=guilds[i])
-                prompt += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='['+g['tag']+']', name=g['guild_name'])
+                prompt += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='[' + g['tag'] + ']', name=g['guild_name'])
 
             prompt += '\n\n Reply with eg. !addGuildRole "Awesome Guild" 1```'
             await self.bot.say(prompt)
@@ -139,7 +138,7 @@ class GuildWars:
         result = '{} is in guilds:\n```'.format(author.mention)
         for i in range(len(guilds)):
             g = Db.get_add_guild(guilds[i])
-            result += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='['+g['tag']+']', name=g['guild_name'])
+            result += '\n ({num}) {tag:<6} {name}'.format(num=i, tag='[' + g['tag'] + ']', name=g['guild_name'])
             # Add guild role to the user
             rid = Db.get_guild_role(ctx.message.server.id, guilds[i])
             if rid is not None:
@@ -152,20 +151,40 @@ class GuildWars:
     async def profile(self, ctx, char_name=None):
         """
         Return the account information for a given user.
+        Automatically  parses the GW2 Efficiency link for character sharing. The link will be broken if there are no
+         characters shared.
+        This requires the progression API permissions to function properly.
         """
         author = ctx.message.author
+        user = GW2(api_key=Db.get_key(author.id))
+        acct_info = user.account.get()
         if char_name is None:
             char_name = Db.get_default_character(author.id)
         try:
-            ar = get_agony(Db.get_key(author.id), char_name)
-            url = "https://gw2efficiency.com/c/" + quote(char_name)
-            embed = discord.Embed(title=char_name, url=url)
-            embed.add_field(value='AR: {}'.format(str(ar)), inline=False, name='Agony Resistance')
+            # embed setup
+            acct_name = acct_info['name']
+            url = "https://gw2efficiency.com/account/characters/" + quote(acct_name)
+            embed = discord.Embed(title=acct_name, url=url)
+
+            # add World for embed
+            wid = acct_info["world"]
+            wname = Db.get_world(wid)
+            embed.add_field(name='World', value=wname, inline=True)
+
+            # Add AR to embed
+            # ar = get_agony(Db.get_key(author.id), char_name)
+            # embed.add_field(value='AR: {}'.format(str(ar)), inline=True, name='Agony Resistance')
+
+            # Add WvW rank
+            wvw_rank = user.account.get()['wvw_rank']
+            embed.add_field(name='WvW Rank', value=wvw_rank, inline=True)
+
+            # Print out the embed
             await self.bot.say(embed=embed)
         except guildwars2api.base.GuildWars2APIError:
             await self.bot.say('The character {}, could not be found.'.format(char_name))
 
-    @commands.command(pass_context=True, aliases = ['defchar'])
+    @commands.command(pass_context=True, aliases=['defchar'])
     async def defaultCharacter(self, ctx, cname=None):
         user = GW2(api_key=Db.get_key(ctx.message.author.id))
         result = False
