@@ -154,6 +154,8 @@ class GuildWars:
         Return the account information for a given user.
         """
         author = ctx.message.author
+        if char_name is None:
+            char_name = Db.get_default_character(author.id)
         try:
             ar = get_agony(Db.get_key(author.id), char_name)
             url = "https://gw2efficiency.com/c/" + quote(char_name)

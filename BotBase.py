@@ -243,6 +243,14 @@ def set_default_character(uid, cname):
         session.commit()
         return True
 
+
+def get_default_character(uid):
+    existing = session.query(Users.default_character).filter(Users.id == uid).one_or_none()
+    if existing is None:
+        return None
+    else:
+        return existing[0]
+
 worldset()
 
 if __name__ == "__main__":
