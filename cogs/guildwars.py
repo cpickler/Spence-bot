@@ -2,6 +2,9 @@ import base64
 import codecs
 import os
 from urllib.parse import quote
+import datetime
+import iso8601
+
 
 import discord
 import guildwars2api
@@ -148,7 +151,7 @@ class GuildWars:
         await self.bot.say(result)
 
     @commands.command(pass_context=True)
-    async def profile(self, ctx, char_name=None):
+    async def profile(self, ctx):
         """
         Return the account information for a given user.
         Automatically  parses the GW2 Efficiency link for character sharing. The link will be broken if there are no
@@ -158,8 +161,6 @@ class GuildWars:
         author = ctx.message.author
         user = GW2(api_key=Db.get_key(author.id))
         acct_info = user.account.get()
-        if char_name is None:
-            char_name = Db.get_default_character(author.id)
         try:
             # embed setup
             acct_name = acct_info['name']
@@ -179,10 +180,15 @@ class GuildWars:
             wvw_rank = user.account.get()['wvw_rank']
             embed.add_field(name='WvW Rank', value=wvw_rank, inline=True)
 
-            # Print out the embed
+            # Add account age
+            created = iso8601.parse_date(acct_info['created'])
+            date = created.strftime('%d %b %Y')
+            embed.add_field(name='Created on', value=date, inline=True)
+
+            # Send out the embed
             await self.bot.say(embed=embed)
         except guildwars2api.base.GuildWars2APIError:
-            await self.bot.say('The character {}, could not be found.'.format(char_name))
+            await self.bot.say('There was an error while processing your request.')
 
     @commands.command(pass_context=True, aliases=['defchar'])
     async def defaultCharacter(self, ctx, cname=None):
