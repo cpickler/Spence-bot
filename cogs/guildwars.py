@@ -4,6 +4,7 @@ import os
 from urllib.parse import quote
 import datetime
 import iso8601
+import random
 
 
 import discord
@@ -222,6 +223,24 @@ class GuildWars:
         tkn = Db.get_key(author.id)
         await self.bot.say(char_output(tkn))
 
+    @commands.command()
+    async def quaggan(self, name: str = None):
+        if name is None:
+            quaggans = api2.quaggans.get()
+            name = random.choice(quaggans)
+        try:
+            url = api2.quaggans.get(id=name)['url']
+        except guildwars2api.base.GuildWars2APIError:
+            url = api2.quaggans.get(id='404')['url']
+
+        # Create quaggan embed
+        embed = discord.Embed(url=url)
+        embed.set_image(url=url)
+
+        # Set embed color
+        quaggan_color = {'girl': discord.Colour.magenta()}
+        embed.color = quaggan_color.get(name, discord.Colour.blue() )
+        await self.bot.say(embed=embed)
 
 def get_agony(tkn, char_name):
     """
