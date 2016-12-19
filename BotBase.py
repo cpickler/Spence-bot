@@ -28,6 +28,7 @@ class Users(Base):
 
     id = Column(BigInteger, primary_key=True)
     api_key = Column(String)
+    default_character = Column(String)
 
 
 class WorldRoles(Base):
@@ -231,6 +232,24 @@ def get_agony_resistance(id):
     else:
         agony = existing[0]
     return agony
+
+
+def set_default_character(uid, cname):
+    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    if existing is None:
+        return False
+    else:
+        existing.default_character = cname
+        session.commit()
+        return True
+
+
+def get_default_character(uid):
+    existing = session.query(Users.default_character).filter(Users.id == uid).one_or_none()
+    if existing is None:
+        return None
+    else:
+        return existing[0]
 
 worldset()
 
