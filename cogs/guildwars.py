@@ -242,6 +242,28 @@ class GuildWars:
         embed.color = quaggan_color.get(name, discord.Colour.blue() )
         await self.bot.say(embed=embed)
 
+    @commands.command(pass_context=True, aliases=['setnick', 'nick'], no_pm=True)
+    async def setNickname(self, ctx, member=None):
+        if member is not None:
+            mentioned = ctx.message.mentions
+            if len(mentioned) == 0:
+                await self.bot.say('The mentioned users are invalid, or may not be mentions.', delete_after=30)
+                return
+        elif member is None:
+            mentioned = [ctx.message.author]
+
+        for mention in mentioned:
+            tkn = Db.get_key(mention.id)
+            user = GW2(api_key=tkn)
+            name = user.account.get()['name']
+            try:
+                await self.bot.change_nickname(ctx.message.author, name)
+            except discord.errors.Forbidden:
+                await self.bot.say('Member {mention} can not be added. The bot may not have permissions to change '
+                                   'nicknames or, the bot may not be able to change the nickname of the '
+                                   'specified member.'.format(mention=mention.mention), delete_after=30)
+
+
 def get_agony(tkn, char_name):
     """
     Get the AR for a character, returning the max possible AR between the two weapon sets.
