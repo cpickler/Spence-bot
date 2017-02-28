@@ -6,6 +6,10 @@ import guildwars2api
 from discord.ext import commands
 from guildwars2api.v1 import GuildWars2API as GW1
 from guildwars2api.v2 import GuildWars2API as GW2
+import aiohttp
+import asyncio
+import async_timeout
+import json
 
 import BotBase as Db
 
@@ -25,37 +29,40 @@ def chat_to_id(chat):
     hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
     return int(hex_string, 0)
 
-def acct_inv(tkn):
-    user = GW2(api_key=tkn)
-    item_dict = dict()
-    characters = user.characters.get()
-    for char in characters:
-        char_inv = user.inventory.get(char)
-        for bag in char_inv['bags']:
-            if bag is not None:
-                for item in bag['inventory']:
-                    if item is not None:
-                         item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
-    for item in user.bank.get():
-        if item is not None:
-            item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
-    return item_dict
+async def auth_fetch(session, url, tkn):
+    with async_timeout.timeout(10):
+        head = {'Authorization': 'Bearer {0}'.format(tkn)}
+        async with session.get(url, headers=head) as response:
+            return await response.text()
 
-def acct_inv_search(tkn, item_list:list):
+async def acct_inv_main(loop, tkn):
     user = GW2(api_key=tkn)
+    chars = user.characters.get()
+    tasks = []
     item_dict = dict()
-    characters = user.characters.get()
-    for char in characters:
-        char_inv = user.inventory.get(char)
-        for bag in char_inv['bags']:
-            if bag is not None:
-                for item in bag['inventory']:
-                    if item is not None and item['id'] in item_list:
-                        item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
-    for item in user.bank.get():
-        if item is not None and item['id'] in item_list:
-            item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
-    return item_dict
+    async with aiohttp.ClientSession(loop=loop) as session:
+        for c in chars:
+            task = asyncio.ensure_future(auth_fetch(session, 'https://api.guildwars2.com/v2/characters/{0}/inventory/'.format(c), tkn))
+            tasks.append(task)
+
+        responses = await asyncio.gather(*tasks)
+        for char in responses:
+            char_inv = json.loads(char)
+            for bag in char_inv['bags']:
+                if bag is not None:
+                    for item in bag['inventory']:
+                        if item is not None:
+                            item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+        for item in user.bank.get():
+            if item is not None:
+                item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+        return item_dict
+
+
+def acct_inv(tkn):
+    loop = asyncio.get_event_loop()
+    inv = loop.run_until_complete(acct_inv_main(loop, 'C53020FE-F672-514F-B5C9-D7C209927B91CC796525-2980-4FD6-8B85-3C9D96BFCD4E'))
+    return inv
 
 class GuildWars:
     def __init__(self, bot):
