@@ -25,6 +25,38 @@ def chat_to_id(chat):
     hex_string = '0x' + str(codecs.encode(b64, 'hex'))[-5:-1]
     return int(hex_string, 0)
 
+def acct_inv(tkn):
+    user = GW2(api_key=tkn)
+    item_dict = dict()
+    characters = user.characters.get()
+    for char in characters:
+        char_inv = user.inventory.get(char)
+        for bag in char_inv['bags']:
+            if bag is not None:
+                for item in bag['inventory']:
+                    if item is not None:
+                         item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+    for item in user.bank.get():
+        if item is not None:
+            item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+    return item_dict
+
+def acct_inv_search(tkn, item_list:list):
+    user = GW2(api_key=tkn)
+    item_dict = dict()
+    characters = user.characters.get()
+    for char in characters:
+        char_inv = user.inventory.get(char)
+        for bag in char_inv['bags']:
+            if bag is not None:
+                for item in bag['inventory']:
+                    if item is not None and item['id'] in item_list:
+                        item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+    for item in user.bank.get():
+        if item is not None and item['id'] in item_list:
+            item_dict[item['id']] = item_dict.get(item['id'], 0) + item['count']
+    return item_dict
+
 class GuildWars:
     def __init__(self, bot):
         self.bot = bot
@@ -144,6 +176,12 @@ class GuildWars:
                 await self.bot.add_roles(author, role)
         result += '\n```'
         await self.bot.say(result)
+
+    @commands.command(pass_context=True)
+    async def li(selfself, ctx):
+        author = ctx.message.author
+        user = GW2(api_key=Db.get_key(author.id))
+
 
 def setup(bot):
     bot.add_cog(GuildWars(bot))
