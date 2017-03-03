@@ -28,6 +28,7 @@ class Users(Base):
 
     id = Column(BigInteger, primary_key=True)
     api_key = Column(String)
+    default_character = Column(String)
 
 
 class WorldRoles(Base):
@@ -59,6 +60,14 @@ class Guilds(Base):
     id = Column(String, primary_key=True)
     name = Column(String)
     tag = Column(String)
+
+
+class Agony(Base):
+    __tablename__ = 'agony'
+
+    id = Column(Integer, primary_key=True)
+    agony = Column(Integer)
+
 
 engine = sqlalchemy.create_engine(sql_url)
 Session = sessionmaker(bind=engine)
@@ -203,6 +212,40 @@ def worldset():
 def get_guild_role(server, gid):
     existing = session.query(GuildRoles.id).filter(GuildRoles.guild_id == gid,
                                                    GuildRoles.server == int(server)).one_or_none()
+    if existing is None:
+        return None
+    else:
+        return existing[0]
+
+
+def get_agony_resistance(id):
+    existing = session.query(Agony.agony).filter(Agony.id==id).one_or_none()
+    if existing is None:
+        agony = 0
+        item = Api2.items.get(id=id)
+        for inf in item['details']['infix_upgrade']['attributes']:
+            if inf['attribute'] == 'AgonyResistance':
+                agony += inf['modifier']
+        infusion = Agony(id=id, agony=agony)
+        session.add(infusion)
+        session.commit()
+    else:
+        agony = existing[0]
+    return agony
+
+
+def set_default_character(uid, cname):
+    existing = session.query(Users).filter(Users.id == uid).one_or_none()
+    if existing is None:
+        return False
+    else:
+        existing.default_character = cname
+        session.commit()
+        return True
+
+
+def get_default_character(uid):
+    existing = session.query(Users.default_character).filter(Users.id == uid).one_or_none()
     if existing is None:
         return None
     else:
